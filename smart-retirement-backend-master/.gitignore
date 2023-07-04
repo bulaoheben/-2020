@@ -1,7 +1,0 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-../.idea
-D:/Code/2022_Sumer/smart-retirement-backend/back/src/main/resources/application.yml
-D:/Code/2022_Sumer/smart-retirement-backend/spring.log*
-D:/Code/2022_Sumer/smart-retirement-backend/back/src/main/java/com/example/back/controller/SysUserController.java
