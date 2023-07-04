@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.back.mapper.EventInfoMapper">
+
+   <resultMap id="BaseResultMap" type="com.example.back.entity.EventInfo">
+        <result column="no" jdbcType="INTEGER" property="no" />
+        <result column="event_type" jdbcType="INTEGER" property="event_type" />
+        <result column="event_date" jdbcType="TIMESTAMP" property="event_date" />
+        <result column="event_location" jdbcType="VARCHAR" property="event_location" />
+        <result column="oldperson_id" jdbcType="INTEGER" property="oldperson_id" />
+        <result column="snapshot" jdbcType="VARCHAR" property="snapshot" />
+    </resultMap>
+    
+    <select id="getAllEventInfo"  resultType="com.example.back.entity.EventInfo">
+        select * from event_info
+    </select>
+    
+    <delete id="deleteEventInfo">
+        delete from event_info where no=#{no}
+    </delete>
+    
+    <select id="getInteractEventInfo"  resultType="com.example.back.entity.EventInfo">
+        select * from event_info where event_type = 1
+    </select>
+    
+    <select id="getStrangerEventInfo"  resultType="com.example.back.entity.EventInfo">
+        select * from event_info where event_type = 2
+    </select>
+    
+    <select id="getPoseEventInfo"  resultType="com.example.back.entity.EventInfo">
+        select * from event_info where event_type = 3
+    </select>
+    
+    <select id="getFenceEventInfo"  resultType="com.example.back.entity.EventInfo">
+        select * from event_info where event_type = 4
+    </select>
+</mapper>
