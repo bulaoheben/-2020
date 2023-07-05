@@ -1,9 +1,13 @@
-from flask import request, render_template, redirect, url_for, Blueprint, jsonify
+from flask import request, render_template, redirect, url_for, Blueprint
 import app.mod_user.controllers as user_c
-from app import app
+from app import app, db
 
 app02 = Blueprint('user', __name__)
 
+# 注册接口
+@app.route('/register', methods=['POST'])
+def register():
+    return '1'
 
 # 登录接口
 @app.route('/login', methods=['GET', 'POST'])
@@ -20,7 +24,7 @@ def do_login_do():
 
 
 # 查询所有管理员用户接口, 返回json信息
-@app.route('/userList')
+@app.route('/userList', methods=['GET'])
 def list_all_users():
     response = {}
     users = user_c.get_all_user()
@@ -33,8 +37,8 @@ def list_all_users():
     return response
 
 
-# 编辑管理员信息，需要传入管理员id进行查询，并在body中携带数据
-@app.route('/editUser/<int:id>', methods=['POST'])
+# 编辑管理员信息，需要在路径中传入管理员id进行查询，并在body中携带数据
+@app.route('/editUser/<int:id>', methods=['PUT'])
 def editUser(id):
     response = {}
     targetUser = user_c.select_by_id(id)
@@ -70,3 +74,18 @@ def editUser(id):
 
     return response
 
+
+# 根据id删除对应的管理员信息
+@app.route('/deleteUser/<int:id>', methods=['DELETE'])
+def deleteUser(id):
+    response = {}
+    targetUser = user_c.select_by_id(id)
+    if targetUser:
+        db.session.delete(targetUser)
+        db.session.commit()
+        response['code'] = 200
+        response['message'] = 'User deleted successfully.'
+    else:
+        response['code'] = 404
+        response['message'] = 'User not found.'
+    return response
