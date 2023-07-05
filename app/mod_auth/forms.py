@@ -1,13 +1,52 @@
 from flask import request, render_template, redirect, url_for, Blueprint
 import app.mod_user.controllers as user_c
 from app import app, db
+from app.mod_user.models import User
 
 app02 = Blueprint('user', __name__)
 
+
 # 注册接口
+# 需要传入的数据有UserName，Password，REAL_NAME，SEX，EMAIL，PHONE
+# 根据UserName确定该用户唯一，才能够返回成功消息，否则返回失败消息
 @app.route('/register', methods=['POST'])
 def register():
-    return '1'
+    response = {}
+    # 获取请求中的数据
+    username = request.form.get('userName')
+    password = request.form.get('password')
+    real_name = request.form.get('realName')
+    sex = request.form.get('sex')
+    email = request.form.get('email')
+    phone = request.form.get('phone')
+
+    # 检查用户名是否已经存在
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        # 用户名已存在，返回失败消息
+        response['code'] = 400
+        response['message'] = 'Username already exists. Please choose a different username.'
+        return response
+
+    # 创建新用户
+    new_user = User(
+        username=username,
+        password=password,
+        real_name=real_name,
+        sex=sex,
+        email=email,
+        phone=phone
+    )
+
+    # 将新用户添加到数据库
+    db.session.add(new_user)
+    db.session.commit()
+
+    # 返回成功消息
+    response['code'] = 200
+    response['message'] = 'Registration successful.'
+    return response
+
 
 # 登录接口
 @app.route('/login', methods=['GET', 'POST'])
