@@ -11,3 +11,4 @@ def select_by_id(id) -> User:
 
 def select_by_password(name, password):
     return User.query.filter_by(username=name, password=password).first()
+
