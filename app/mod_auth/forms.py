@@ -1,6 +1,7 @@
 from flask import request, render_template, redirect, url_for, Blueprint, jsonify
 import app.mod_user.controllers as user_c
 from app import app
+from app import db
 
 app02 = Blueprint('user', __name__)
 
