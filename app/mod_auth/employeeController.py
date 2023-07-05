@@ -57,7 +57,9 @@ def updateEmployee(id):
             targetEmployee.description = request.form.get('description')
         if request.form.get('resign_date'):
             targetEmployee.resignDate = request.form.get('resign_date')
-        if request.form.get('isactive'):
+            # 离职的工作人员信息无效
+            targetEmployee.isactive = 'no'
+        if request.form.get('isactive'):  # yse or no
             targetEmployee.isactive = request.form.get('isactive')
         if request.form.get('imgset_dir'):
             targetEmployee.imgset_dir = request.form.get('imgset_dir')
@@ -134,4 +136,44 @@ def updateEmployeeImage(id):
     else:
         response['code'] = 404
         response['message'] = 'Employee not found'
+    return response
+
+
+# 统计分析(年龄段统计）
+@app.route('/getEmployeeRecord', methods=['POST'])
+def getEmployeeRecord():
+    # 需要只返回在职的工作人员
+    column_data = Employee.query.with_entities(Employee.birthday).all()
+    # 定义年龄段
+    age_ranges = {"00-10": 0, "10-20": 0, "20-30": 0, "30-40": 0,
+                  "40-50": 0, "50-60": 0, "60-70": 0, "70-80": 0, "80+": 0}
+    for dob in column_data:
+        age = datetime.datetime.now().year - dob[0].year
+        if age >= 10 and age < 20:
+            age_ranges["10-20"] += 1
+        elif age >= 20 and age < 30:
+            age_ranges["20-30"] += 1
+        elif age >= 30 and age < 40:
+            age_ranges["30-40"] += 1
+        elif age >= 40 and age < 50:
+            age_ranges["40-50"] += 1
+        elif age >= 50 and age < 60:
+            age_ranges["50-60"] += 1
+        elif age >= 60 and age < 70:
+            age_ranges["60-70"] += 1
+        elif age >= 70 and age < 80:
+            age_ranges["70-80"] += 1
+        elif age <=10:
+            age_ranges["00-10"] += 1
+        else:
+            age_ranges["80+"] += 1
+
+    # 打印每个年龄段的人数
+    for range_name, count in age_ranges.items():
+        print(f"{range_name}: {count}")
+
+    response = {}
+    response['code'] = 200
+    data = age_ranges
+    response['data'] = data
     return response
