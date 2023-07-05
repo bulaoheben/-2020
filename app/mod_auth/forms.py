@@ -24,7 +24,7 @@ def register():
     existing_user = User.query.filter_by(username=username).first()
     if existing_user:
         # 用户名已存在，返回失败消息
-        response['code'] = 400
+        response['code'] = "400"
         response['message'] = 'Username already exists. Please choose a different username.'
         return response
 
@@ -43,23 +43,28 @@ def register():
     db.session.commit()
 
     # 返回成功消息
-    response['code'] = 200
+    response['code'] = "200"
     response['message'] = 'Registration successful.'
     return response
 
 
 # 登录接口
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET'])
 def do_login_do():
-    if request.method == 'GET':
-        return render_template("login.html")
-
+    response = {}
     username = request.form['username']
     password = request.form['password']
     user = user_c.select_by_password(username, password)
 
     if user:
-        return redirect(url_for('index.html'))
+        response["code"] = "200"
+        response["message"] = "login success"
+        response["data"] = user.to_dict()
+        return response
+
+    response["code"] = "400"
+    response["message"] = "Incorrect username or password"
+    return response
 
 
 # 查询所有管理员用户接口, 返回json信息
