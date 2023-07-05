@@ -1,4 +1,4 @@
-from flask import request, render_template, redirect, url_for, Blueprint
+from flask import request, Blueprint
 import app.mod_user.controllers as user_c
 from app import app, db
 from app.mod_user.models import User
@@ -72,7 +72,8 @@ def do_login_do():
 def list_all_users():
     response = {}
     users = user_c.get_all_user()
-    response['code'] = 200
+    response['code'] = "200"
+    response["message"] = "search success"
     user_json = []
     for user in users:
         user_data = user.to_dict()
