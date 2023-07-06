@@ -143,12 +143,14 @@ def updateEmployeeImage(id):
 @app.route('/getEmployeeRecord', methods=['POST'])
 def getEmployeeRecord():
     # 需要只返回在职的工作人员
-    column_data = Employee.query.with_entities(Employee.birthday).all()
+    column_data = employee_service.get_valid_employee()
+    #column_data = Employee.query.with_entities(Employee.birthday).all()
     # 定义年龄段
     age_ranges = {"00-10": 0, "10-20": 0, "20-30": 0, "30-40": 0,
                   "40-50": 0, "50-60": 0, "60-70": 0, "70-80": 0, "80+": 0}
     for dob in column_data:
-        age = datetime.datetime.now().year - dob[0].year
+        employee = dob.birthday
+        age = datetime.now().year - employee.year
         if age >= 10 and age < 20:
             age_ranges["10-20"] += 1
         elif age >= 20 and age < 30:
