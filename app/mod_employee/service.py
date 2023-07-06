@@ -8,3 +8,6 @@ def get_all_employee():
 def select_by_id(id) -> Employee:
     return Employee.query.get(id)
 
+
+def get_valid_employee() -> Employee:
+    return Employee.query.filter_by(resign_date=None)
