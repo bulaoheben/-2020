@@ -82,55 +82,76 @@ def list_all_users():
     return response
 
 
-# 编辑管理员信息，需要在路径中传入管理员id进行查询，并在body中携带数据
-@app.route('/editUser/<int:id>', methods=['PUT'])
-def editUser(id):
+# 编辑管理员信息，在body中携带数据
+@app.route('/editUser', methods=['PUT'])
+def editUser():
     response = {}
-    targetUser = user_c.select_by_id(id)
+    ID = request.args.get('id')
+    targetUser = user_c.select_by_id(ID)
     if targetUser:
-        targetUser.username = request.form.get('username')
-        targetUser.password = request.form.get('password')
-        targetUser.real_name = request.form.get('real_name')
-        targetUser.sex = request.form.get('sex')
-        targetUser.email = request.form.get('email')
-        targetUser.phone = request.form.get('phone')
-        targetUser.mobile = request.form.get('mobile')
-        targetUser.description = request.form.get('description')
-        targetUser.isactive = request.form.get('isactive')
-        targetUser.created = request.form.get('created')
-        targetUser.createby = request.form.get('createby')
-        targetUser.updated = request.form.get('updated')
-        targetUser.updateby = request.form.get('updateby')
-        targetUser.remove = request.form.get('remove')
-        targetUser.datafilter = request.form.get('datafilter')
-        targetUser.theme = request.form.get('theme')
-        targetUser.defaultpage = request.form.get('defaultpage')
-        targetUser.logoimage = request.form.get('logoimage')
-        targetUser.qqopenid = request.form.get('qqopenid')
-        targetUser.appversion = request.form.get('appversion')
-        targetUser.jsonauth = request.form.get('jsonauth')
+        if 'UserName' in request.form and request.form['UserName']:
+            targetUser.username = request.form['UserName']
+        if 'Password' in request.form and request.form['Password']:
+            targetUser.password = request.form['Password']
+        if 'REAL_NAME' in request.form and request.form['REAL_NAME']:
+            targetUser.real_name = request.form['REAL_NAME']
+        if 'SEX' in request.form and request.form['SEX']:
+            targetUser.sex = request.form['SEX']
+        if 'EMAIL' in request.form and request.form['EMAIL']:
+            targetUser.email = request.form['EMAIL']
+        if 'PHONE' in request.form and request.form['PHONE']:
+            targetUser.phone = request.form['PHONE']
+        if 'DESCRIPTION' in request.form and request.form['DESCRIPTION']:
+            targetUser.description = request.form['DESCRIPTION']
+        if 'ISACTIVE' in request.form and request.form['ISACTIVE']:
+            targetUser.isactive = request.form['ISACTIVE']
+        if 'CREATED' in request.form and request.form['CREATED']:
+            targetUser.created = request.form['CREATED']
+        if 'CREATEBY' in request.form and request.form['CREATEBY']:
+            targetUser.createby = request.form['CREATEBY']
+        if 'UPDATED' in request.form and request.form['UPDATED']:
+            targetUser.updated = request.form['UPDATED']
+        if 'UPDATEBY' in request.form and request.form['UPDATEBY']:
+            targetUser.updateby = request.form['UPDATEBY']
+        if 'REMOVE' in request.form and request.form['REMOVE']:
+            targetUser.remove = request.form['REMOVE']
+        if 'DATAFILTER' in request.form and request.form['DATAFILTER']:
+            targetUser.datafilter = request.form['DATAFILTER']
+        if 'theme' in request.form and request.form['theme']:
+            targetUser.theme = request.form['theme']
+        if 'defaultpage' in request.form and request.form['defaultpage']:
+            targetUser.defaultpage = request.form['defaultpage']
+        if 'logoimage' in request.form and request.form['logoimage']:
+            targetUser.logoimage = request.form['logoimage']
+        if 'qqopenid' in request.form and request.form['qqopenid']:
+            targetUser.qqopenid = request.form['qqopenid']
+        if 'appversion' in request.form and request.form['appversion']:
+            targetUser.appversion = request.form['appversion']
+        if 'jsonauth' in request.form and request.form['jsonauth']:
+            targetUser.jsonauth = request.form['jsonauth']
 
         db.session.commit()  # 提交更新到数据库
-        response['code'] = 200
+        response['code'] = "200"
         response['message'] = 'User updated successfully.'
     else:
-        response['code'] = 404
+        response['code'] = "400"
         response['message'] = 'User not found.'
 
     return response
 
 
 # 根据id删除对应的管理员信息
-@app.route('/deleteUser/<int:id>', methods=['DELETE'])
-def deleteUser(id):
+@app.route('/deleteUser', methods=['DELETE'])
+def deleteUser():
     response = {}
-    targetUser = user_c.select_by_id(id)
+    ID = request.args.get('id')
+    targetUser = user_c.select_by_id(ID)
     if targetUser:
         db.session.delete(targetUser)
         db.session.commit()
-        response['code'] = 200
+        response['code'] = "200"
         response['message'] = 'User deleted successfully.'
     else:
-        response['code'] = 404
+        response['code'] = "400"
         response['message'] = 'User not found.'
     return response
