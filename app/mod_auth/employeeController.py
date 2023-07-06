@@ -56,7 +56,7 @@ def updateEmployee(id):
         if request.form.get('description'):
             targetEmployee.description = request.form.get('description')
         if request.form.get('resign_date'):
-            targetEmployee.resignDate = request.form.get('resign_date')
+            targetEmployee.resign_date = request.form.get('resign_date')
             # 离职的工作人员信息无效
             targetEmployee.isactive = 'no'
         if request.form.get('isactive'):  # yse or no
