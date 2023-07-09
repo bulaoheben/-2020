@@ -49,7 +49,7 @@ def register():
 
 
 # 登录接口
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def do_login_do():
     response = {}
     username = request.form['username']
@@ -67,19 +67,29 @@ def do_login_do():
     return response
 
 
-# 查询所有管理员用户接口, 返回json信息
+# 查询所有管理员用户接口，分页查询方式
 @app.route('/userList', methods=['GET'])
 def list_all_users():
     response = {}
-    users = user_c.get_all_user()
+
+    # 获取分页参数
+    page = request.args.get('page', default=1, type=int)
+    per_page = request.args.get('per_page', default=10, type=int)
+
+    # 查询管理员用户信息
+    users = User.query.paginate(page=page, per_page=per_page, error_out=False)
+    user_list = [user.to_dict() for user in users.items]
+
+    # 构造分页结果
     response['code'] = "200"
-    response["message"] = "search success"
-    user_json = []
-    for user in users:
-        user_data = user.to_dict()
-        user_json.append(user_data)
-    response['data'] = user_json
+    response["message"] = "Search success."
+    response['data'] = {
+        'items': user_list,
+        'total_pages': users.pages,
+        'total_items': users.total
+    }
     return response
+
 
 
 # 编辑管理员信息，在body中携带数据
