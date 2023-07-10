@@ -91,7 +91,6 @@ def list_all_users():
     return response
 
 
-
 # 编辑管理员信息，在body中携带数据
 @app.route('/editUser', methods=['PUT'])
 def editUser():

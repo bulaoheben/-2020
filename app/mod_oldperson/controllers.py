@@ -127,32 +127,6 @@ def get_old_person(person_id):
     return response
 
 
-# # 查询所有老人信息（分页查询）
-# @oldperson.route('/getAllOldPersons', methods=['GET'])
-# def get_all_old_persons():
-#     response = {}
-#
-#     # 获取分页参数
-#     page = request.args.get('page', default=1, type=int)
-#     per_page = request.args.get('per_page', default=10, type=int)
-#
-#     # 查询分页的老人信息
-#     pagination = OldPersonInfo.query.paginate(page=page, per_page=per_page, error_out=False)
-#     persons = pagination.items
-#
-#     # 构造分页结果
-#     person_list = [person.to_dict() for person in persons]
-#     total_pages = pagination.pages
-#     total_items = pagination.total
-#
-#     # 返回分页结果
-#     response['code'] = "200"
-#     response['message'] = 'Old person information retrieved successfully.'
-#     response['data'] = person_list
-#     response['total_pages'] = total_pages
-#     response['total_items'] = total_items
-#     return response
-
 # 查询所有老人信息（后端分页查询）
 @oldperson.route('/getAllOldPersons', methods=['GET'])
 def get_all_old_persons():
