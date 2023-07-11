@@ -1,6 +1,5 @@
 import base64
 import os
-
 import numpy as np
 from flask import Response, Blueprint, request, send_file, jsonify
 import cv2
@@ -14,6 +13,10 @@ camera = cv2.VideoCapture(0)  # 0表示默认的摄像头
 windows = {}  # 用字典来存储不同事件ID对应的时间窗口
 
 
+def strangerFacialExpressionAPI(success, frame, counter):
+    return
+
+
 def generate_frames():
     counter = 0
     while True:
@@ -25,20 +28,20 @@ def generate_frames():
             flag = False
             counter += 1
             # 获得事件id，处理后的图像processed_frame，是否出现故障flag，事件对应的描述description
-            # (event_id, processed_frame, flag, description) = strangerFacialExpressionAPI(success, frame, counter)
+            (event_id, processed_frame, flag, description) = strangerFacialExpressionAPI(success, frame, counter)
             if flag:
                 break
 
-            # # 判断是否需要保存截图
-            # if event_id in [0, 1, 2, 3, 4]:
-            #     if event_id not in windows:
-            #         # 开启新的时间窗口，保存截图
-            #         window_start_time = datetime.datetime.now()
-            #         window_end_time = window_start_time + datetime.timedelta(seconds=5)  # 设置时间窗口的长度为5秒
-            #         windows[event_id] = (window_start_time, window_end_time)
-            #         # 保存截图为图片文件
-            #         filename = f'event_{event_id}_{counter}.jpg'  # 根据需要构建文件名
-            #         cv2.imwrite(filename, processed_frame)  # 保存截图为图片文件
+            # 判断是否需要保存截图
+            if event_id in [0, 1, 2, 3, 4]:
+                if event_id not in windows:
+                    # 开启新的时间窗口，保存截图
+                    window_start_time = datetime.datetime.now()
+                    window_end_time = window_start_time + datetime.timedelta(seconds=5)  # 设置时间窗口的长度为5秒
+                    windows[event_id] = (window_start_time, window_end_time)
+                    # 保存截图为图片文件
+                    filename = f'event_{event_id}_{counter}.jpg'  # 根据需要构建文件名
+                    cv2.imwrite(filename, processed_frame)  # 保存截图为图片文件
 
             # 将处理后的帧转换为图片格式
             ret, buffer = cv2.imencode('.jpg', frame)
