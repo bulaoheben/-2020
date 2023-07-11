@@ -1,3 +1,5 @@
+import math
+
 from flask import request, Blueprint
 
 from app.mod_volunteer.models import Volunteer
@@ -6,14 +8,15 @@ import datetime
 
 app_volunteer = Blueprint('volunteer', __name__)
 
+
 def get_all_user():
     return Volunteer.query.all()
 
 
-#1录入、2修改、3查询、4删除、5头像的设定和6统计分析
-#除了id不用给其他的都给
+# 1录入、2修改、3查询、4删除、5头像的设定和6统计分析
+# 除了id不用给其他的都给
 
-#1.录入(可以啦）
+# 1.录入(可以啦）
 @app.route('/insert_volunteer_info', methods=['POST'])
 def insert_volunteer_info():
     # 获取请求中的数据
@@ -34,7 +37,7 @@ def insert_volunteer_info():
     UPDATEBY2 = request.form.get('UPDATEBY')
     REMOVE2 = request.form.get('REMOVE')
 
-    volunteer2=Volunteer(
+    volunteer2 = Volunteer(
         name=name2,
         gender=gender2,
         phone=phone2,
@@ -56,12 +59,13 @@ def insert_volunteer_info():
     db.session.commit()
 
     response = {}
-    #用户名已存在，返回失败消息
-    response['code'] =200
+    # 用户名已存在，返回失败消息
+    response['code'] = 200
     response['message'] = 'Volunteer information incerted successfully'
     return response
 
-#2修改义工信息（可以啦）
+
+# 2修改义工信息（可以啦）
 @app.route('/modify_volunteer_info', methods=['POST'])
 def modify_volunteer_info():
     id = request.form.get('id')
@@ -118,27 +122,29 @@ def modify_volunteer_info():
         volunteer.REMOVE2 = REMOVE2
     # 提交修改到数据库
     db.session.commit()
-    response={}
+    response = {}
     response['code'] = 200
     response['message'] = 'Volunteer information updated successfully'
     return response
 
-#3.查询义工信息(可以啦）
+
+# 3.查询义工信息(可以啦）
 @app.route('/select_by_id', methods=['POST'])
 def select_by_id() -> Volunteer:
     id2 = int(request.form.get('id'))
     volunteer = Volunteer.query.get(id2)
-    response={}
-#    volunteer= Volunteer.query.filter_by(id=id2)
+    response = {}
+    #    volunteer= Volunteer.query.filter_by(id=id2)
     response['data'] = volunteer.to_dict()
     response['code'] = 200
     return response
 
-#4.删除义工信息(可以啦)
+
+# 4.删除义工信息(可以啦)
 @app.route('/delete_volunteer_info', methods=['POST'])
 def delete_volunteer_info():
     id2 = request.form.get('id')
-    volunteer2=Volunteer.query.get(id2)
+    volunteer2 = Volunteer.query.get(id2)
     try:
         db.session.delete(volunteer2)
         db.session.commit()
@@ -150,12 +156,13 @@ def delete_volunteer_info():
     response['code'] = 200
     return response
 
-#5.头像设定（可以啦）
+
+# 5.头像设定（可以啦）
 @app.route('/modify_avator_info', methods=['POST'])
 def modify_avator_info():
     id2 = request.form.get('id')
     imgset_dir = request.form.get('imgset_dir')
-    volunteer2=Volunteer.query.get(id2)
+    volunteer2 = Volunteer.query.get(id2)
     try:
         volunteer2.imgset_dir = imgset_dir
         db.session.commit()
@@ -167,7 +174,8 @@ def modify_avator_info():
     response['code'] = 200
     return response
 
-#6.统计分析(入职，离职时间统计）(可以啦)
+
+# 6.统计分析(入职，离职时间统计）(可以啦)
 @app.route('/volunteerrecord', methods=['POST'])
 def volunteerrecord():
     column_data = Volunteer.query.with_entities(Volunteer.birthday).all()
@@ -190,7 +198,7 @@ def volunteerrecord():
             age_ranges["60-70"] += 1
         elif age >= 70 and age < 80:
             age_ranges["70-80"] += 1
-        elif age <=10:
+        elif age <= 10:
             age_ranges["00-10"] += 1
         else:
             age_ranges["80+"] += 1
@@ -206,3 +214,35 @@ def volunteerrecord():
     return response
 
 
+@app.route('/getAllVolunteers', methods=['GET'])
+def getAllVolunteers():
+    response = {}
+
+    # 获取分页参数
+    page = request.args.get('page', default=1, type=int)
+    per_page = request.args.get('per_page', default=10, type=int)
+
+    # 计算跳过的条目数量
+    offset = (page - 1) * per_page
+
+    # 查询志愿者信息
+    persons = Volunteer.query.offset(offset).limit(per_page).all()
+
+    # 查询总条目数
+    total_items = Volunteer.query.count()
+
+    # 计算总页数
+    total_pages = int(math.ceil(total_items / per_page))
+
+    # 构造分页结果
+    person_list = [person.to_dict() for person in persons]
+
+    # 返回分页结果
+    response['code'] = "200"
+    response['message'] = 'Volunteer information retrieved successfully.'
+    response['data'] = {
+        'items': person_list,
+        'total_pages': total_pages,
+        'total_items': total_items
+    }
+    return response
