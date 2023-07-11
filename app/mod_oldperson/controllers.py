@@ -1,5 +1,4 @@
 import math
-
 from flask import request, Blueprint
 from app import db
 from app.mod_oldperson.models import OldPersonInfo
