@@ -3,59 +3,30 @@ import os
 import numpy as np
 from flask import Response, Blueprint, request, send_file, jsonify
 import cv2
-import datetime
+import recogTotal.facenet_retinaface_pytorch.api.recog_emotion_api as emotion_api
 
 from app import static_path
 
 app_video = Blueprint('video', __name__)
 camera = cv2.VideoCapture(0)  # 0表示默认的摄像头
-# 在生成帧的循环中定义时间窗口的相关变量
-windows = {}  # 用字典来存储不同事件ID对应的时间窗口
-
-
-def strangerFacialExpressionAPI(success, frame, counter):
-    return
-
 
 def generate_frames():
-    counter = 0
+    emotion_func = emotion_api.recog_emotion_activity()
     while True:
         # 读取摄像头视频帧
         success, frame = camera.read()
         if not success:
             break
         else:
-            flag = False
-            counter += 1
-            # 获得事件id，处理后的图像processed_frame，是否出现故障flag，事件对应的描述description
-            (event_id, processed_frame, flag, description) = strangerFacialExpressionAPI(success, frame, counter)
-            if flag:
-                break
-
-            # 判断是否需要保存截图
-            if event_id in [0, 1, 2, 3, 4]:
-                if event_id not in windows:
-                    # 开启新的时间窗口，保存截图
-                    window_start_time = datetime.datetime.now()
-                    window_end_time = window_start_time + datetime.timedelta(seconds=5)  # 设置时间窗口的长度为5秒
-                    windows[event_id] = (window_start_time, window_end_time)
-                    # 保存截图为图片文件
-                    filename = f'event_{event_id}_{counter}.jpg'  # 根据需要构建文件名
-                    cv2.imwrite(filename, processed_frame)  # 保存截图为图片文件
+            processed_frame = emotion_func.recog_emotion_activity_api(frame=frame)
 
             # 将处理后的帧转换为图片格式
-            ret, buffer = cv2.imencode('.jpg', frame)
+            ret, buffer = cv2.imencode('.jpg', processed_frame)
             frame_bytes = buffer.tobytes()
 
             # 返回处理后的图片给前端
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-            # 检查时间窗口是否结束
-            for event_id, (window_start_time, window_end_time) in list(windows.items()):
-                if datetime.datetime.now() > window_end_time:
-                    # 删除时间窗口
-                    del windows[event_id]
 
     camera.release()  # 释放摄像头资源
 

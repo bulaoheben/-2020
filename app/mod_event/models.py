@@ -12,6 +12,14 @@ class EventInfo(db.Model):
     oldperson_id = db.Column(db.Integer)
     pic_url = db.Column(db.String(100))
 
+    def EventInfo(self, event_type, event_date, event_location, event_desc, oldperson_id, pic_url):
+        self.event_type = event_type
+        self.event_date = event_date
+        self.event_location = event_location
+        self.event_desc = event_desc
+        self.oldperson_id = oldperson_id
+        self.pic_url = pic_url
+
     def to_dict(self):
         return {
             'id': self.id,

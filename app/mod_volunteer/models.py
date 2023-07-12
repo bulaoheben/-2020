@@ -1,5 +1,6 @@
 from app import db
 
+
 class Volunteer(db.Model):
     __tablename__ = 'volunteer_info'
 
@@ -23,28 +24,28 @@ class Volunteer(db.Model):
 
     def to_dict(self):
         return {
-                'id': self.id,
-                'name': self.name,
-                'gender': self.gender,
-                'phone': self.phone,
-                'id_card': self.id_card,
-                'birthday': self.birthday,
-                'checkin_date': self.checkin_date,
-                'checkout_date': self.checkout_date,
-                'imgset_dir': self.imgset_dir,
-                'profile_photo': self.profile_photo,
-                'DESCRIPTION': self.DESCRIPTION,
-                'ISACTIVE': self.ISACTIVE,
-                'CREATED': self.CREATED,
-                'CREATEBY': self.CREATEBY,
-                'UPDATED': self.UPDATED,
-                'UPDATEBY': self.UPDATEBY,
-                'REMOVE': self.REMOVE
+            'id': self.id,
+            'name': self.name,
+            'gender': self.gender,
+            'phone': self.phone,
+            'id_card': self.id_card,
+            'birthday': self.birthday,
+            'checkin_date': self.checkin_date,
+            'checkout_date': self.checkout_date,
+            'imgset_dir': self.imgset_dir,
+            'profile_photo': self.profile_photo,
+            'DESCRIPTION': self.DESCRIPTION,
+            'ISACTIVE': self.ISACTIVE,
+            'CREATED': self.CREATED,
+            'CREATEBY': self.CREATEBY,
+            'UPDATED': self.UPDATED,
+            'UPDATEBY': self.UPDATEBY,
+            'REMOVE': self.REMOVE
         }
 
-    def __init__(self, name,gender,phone,id_card,birthday,checkin_date,
-                 checkout_date,imgset_dir,profile_photo,DESCRIPTION,ISACTIVE,CREATED,CREATEBY,
-                 UPDATED,UPDATEBY,REMOVE):
+    def __init__(self, name, gender, phone, id_card, birthday, checkin_date,
+                 checkout_date, imgset_dir, profile_photo, DESCRIPTION, ISACTIVE, CREATED, CREATEBY,
+                 UPDATED, UPDATEBY, REMOVE):
         self.name = name
         self.gender = gender
         self.phone = phone
@@ -61,4 +62,3 @@ class Volunteer(db.Model):
         self.updated = UPDATED
         self.updated_by = UPDATEBY
         self.remove = REMOVE
-

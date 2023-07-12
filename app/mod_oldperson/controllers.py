@@ -56,6 +56,7 @@ def delete_old_person():
     response = {}
 
     # 获取请求中的数据
+    print(request)
     id_card = request.form.get('id_card')
 
     # 检查数据是否为空
