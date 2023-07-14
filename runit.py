@@ -5,6 +5,7 @@ from app.mod_event.controllers import event
 from app.mod_oldperson.controllers import oldperson
 from app.mod_video.video import app_video
 from app.mod_volunteer.controllers import app_volunteer
+from recogTotal.real_time_fall_detection.camera_detect_api import fc
 
 # 注册路由
 app.register_blueprint(app02, url_prefix='/app02')

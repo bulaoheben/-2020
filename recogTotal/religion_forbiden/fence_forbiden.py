@@ -10,8 +10,17 @@ python testingfence.py --filename tests/yard_01.mp4
 '''
 
 # import the necessary packages
-from oldcare.track import CentroidTracker
-from oldcare.track import TrackableObject
+import datetime
+import os
+import threading
+
+from PIL import Image
+
+from app import static_path, db
+from app.mod_event.models import EventInfo
+from recogTotal.religion_forbiden import forbidden_path
+from recogTotal.religion_forbiden.oldcare.track import CentroidTracker
+from recogTotal.religion_forbiden.oldcare.track import TrackableObject
 from imutils.video import FPS
 import numpy as np
 import imutils
@@ -24,6 +33,7 @@ import argparse
 class fenceForbiden():
     def __init__(self):
 
+        self.windows = {}
         # 传入参数
         self.ap = argparse.ArgumentParser()
         self.ap.add_argument("-f", "--filename", required=False, default='',
@@ -31,11 +41,11 @@ class fenceForbiden():
         self.args = vars(self.ap.parse_args())
 
         # 全局变量
-        self.prototxt_file_path = 'models/mobilenet_ssd/MobileNetSSD_deploy.prototxt'
+        self.prototxt_file_path = forbidden_path + 'models/mobilenet_ssd/MobileNetSSD_deploy.prototxt'
         # # Contains the Caffe deep learning model files. We’ll be using a
         # MobileNet Single Shot Detector (SSD), “Single Shot Detectors for
         # object detection”.
-        self.model_file_path = 'models/mobilenet_ssd/MobileNetSSD_deploy.caffemodel'
+        self.model_file_path = forbidden_path + 'models/mobilenet_ssd/MobileNetSSD_deploy.caffemodel'
         self.input_video = self.args['filename']
         self.skip_frames = 30  # of skip frames between detections
 
@@ -53,15 +63,6 @@ class fenceForbiden():
         # 加载物体识别模型
         print("[INFO] loading model...")
         self.net = cv2.dnn.readNetFromCaffe(self.prototxt_file_path, self.model_file_path)
-
-        # if a video path was not supplied, grab a reference to the webcam
-        if not self.input_video:
-            print("[INFO] starting video stream...")
-            self.vs = cv2.VideoCapture(0)
-            time.sleep(2)
-        else:
-            print("[INFO] opening video file...")
-            self.vs = cv2.VideoCapture(self.input_video)
 
         # initialize the frame dimensions (we'll set them as soon as we read
         # the first frame from the video)
@@ -84,16 +85,21 @@ class fenceForbiden():
         # start the frames per second throughput estimator
         self.fps = FPS().start()
 
+
+
+
+    def remove_window(self, event_id):
+        del self.windows[event_id]
+        print(f"Window for event {event_id} removed.")
+
     # loop over frames from the video stream
     def fenceForbidenAPI(self, ret, frame):
 
         # if we are viewing a video and we did not grab a frame then we
         # have reached the end of the video
-        if self.input_video and not ret:
-            return ret, frame, True
 
-        if not self.input_video:
-            frame = cv2.flip(frame, 1)
+
+        frame = cv2.flip(frame, 1)
 
         # resize the frame to have a maximum width of 500 pixels (the
         # less data we have, the faster we can process it), then convert
@@ -116,7 +122,7 @@ class fenceForbiden():
         if self.totalFrames % self.skip_frames == 0:
             # set the status and initialize our new set of object trackers
             status = "Detecting"
-            trackers = []
+            self.trackers = []
 
             # convert the frame to a blob and pass the blob through the
             # network and obtain the detections
@@ -155,7 +161,7 @@ class fenceForbiden():
 
                     # add the tracker to our list of trackers so we can
                     # utilize it during skip frames
-                    trackers.append(tracker)
+                    self.trackers.append(tracker)
 
         # otherwise, we should utilize our object *trackers* rather than
         # object *detectors* to obtain a higher frame processing throughput
@@ -229,16 +235,19 @@ class fenceForbiden():
                         self.totalDown += 1
                         to.counted = True
 
+
+
+
             # store the trackable object in our dictionary
             self.trackableObjects[objectID] = to
 
             # draw both the ID of the object and the centroid of the
             # object on the output frame
             text = "ID {}".format(objectID)
-            cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.circle(frame, (centroid[0], centroid[1]), 4,
-                       (0, 255, 0), -1)
+            cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            cv2.circle(frame, (centroid[0], centroid[1]), 4,(0, 255, 0), -1)
+
+
 
         # construct a tuple of information we will be displaying on the
         # frame
@@ -256,39 +265,70 @@ class fenceForbiden():
 
         # show the output frame
         # cv2.imshow("Frame", frame)
-        return ret, frame, False
-        k = cv2.waitKey(1) & 0xff
-        if k == 27:
-            return ret, frame, True
-
         # increment the total number of frames processed thus far and
         # then update the FPS counter
         self.totalFrames += 1
         self.fps.update()
 
+        # 如果检测到入侵事件
+        if self.totalDown > 0:
+            # 检查入侵事件是否已经在时间窗口中进行记录
+            if "4" not in self.windows:
+                # 开启新的时间窗口，保存截图，插入数据库
+                window_start_time = datetime.datetime.now()
+                window_end_time = window_start_time + datetime.timedelta(seconds=5)  # 设置时间窗口的长度为5秒
+                self.windows["4"] = (window_start_time, window_end_time)
+                # 设置定时器，在时间窗口结束后删除时间窗口
+                timer = threading.Timer(5, self.remove_window, args=["4"])
+                timer.start()
+
+                now_datetime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))  # 当前系统时间
+                now_datetime2 = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))  # 当前系统时间
+
+                # 保存截图为图片文件
+                filename = static_path + f'event\\event_4_{now_datetime2}.jpg'  # 根据需要构建文件名
+                img = Image.fromarray(frame)
+                img.save(filename)
+
+                # 检查图片是否已经成功保存
+                if os.path.exists(filename):
+                    # 插入数据库中
+                    event = EventInfo(event_type=4,
+                                      event_date=now_datetime,
+                                      event_location=None,
+                                      event_desc=f"{now_datetime}检测到区域入侵事件",
+                                      oldperson_id=None,
+                                      pic_url=f'event\\event_4_{now_datetime2}.jpg')
+                    db.session.add(event)
+                    db.session.commit()
+
+        return frame
 
 
-buf = fenceForbiden()
-# 初始化摄像头
-if not buf.input_video:
-    vs = cv2.VideoCapture(0)
-    time.sleep(2)
-else:
-    vs = cv2.VideoCapture(buf.input_video)
-# 不断循环
-counter = 0
-flag = False
-while True:
-    counter += 1
-    (grabbed, frame) = vs.read()
-    (grabbed, frame, flag) = buf.fenceForbidenAPI(grabbed, frame)
-    if flag:
-        break
-# stop the timer and display FPS information
-buf.fps.stop()
-print("[INFO] elapsed time: {:.2f}".format(buf.fps.elapsed()))  # 14.19
-print("[INFO] approx. FPS: {:.2f}".format(buf.fps.fps()))  # 90.43
 
-# close any open windows
-vs.release()
-cv2.destroyAllWindows()
+
+
+# buf = fenceForbiden()
+# # 初始化摄像头
+# if not buf.input_video:
+#     vs = cv2.VideoCapture(0)
+#     time.sleep(2)
+# else:
+#     vs = cv2.VideoCapture(buf.input_video)
+# # 不断循环
+# counter = 0
+# flag = False
+# while True:
+#     counter += 1
+#     (grabbed, frame) = vs.read()
+#     (grabbed, frame, flag) = buf.fenceForbidenAPI(grabbed, frame)
+#     if flag:
+#         break
+# # stop the timer and display FPS information
+# buf.fps.stop()
+# print("[INFO] elapsed time: {:.2f}".format(buf.fps.elapsed()))  # 14.19
+# print("[INFO] approx. FPS: {:.2f}".format(buf.fps.fps()))  # 90.43
+#
+# # close any open windows
+# vs.release()
+# cv2.destroyAllWindows()

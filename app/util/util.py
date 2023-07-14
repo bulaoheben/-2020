@@ -40,3 +40,7 @@ def find_old_id_by_name(name):
 # 根据义工的姓名，查询其id
 def find_volunteer_id_by_name(name):
     return Volunteer.query.filter_by(name=name).first()
+
+
+if __name__ == '__main__':
+    print(namesToRoles(["1", "2"]))
