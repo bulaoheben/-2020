@@ -1,9 +1,9 @@
-import os
-
 from flask import Flask
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 import pymysql
+import os
+
 
 pymysql.install_as_MySQLdb()
 

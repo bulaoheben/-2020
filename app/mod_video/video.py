@@ -3,27 +3,41 @@ import os
 import numpy as np
 from flask import Response, Blueprint, request, send_file, jsonify
 import cv2
-import recogTotal.facenet_retinaface_pytorch.api.recog_emotion_api as emotion_api
-import recogTotal.religion_forbiden.fence_forbiden as fence_api
 from app import static_path
 from recogTotal.real_time_fall_detection import fall_path
-from recogTotal.real_time_fall_detection.camera_detect_api import FallDetection, fc
+from recogTotal.real_time_fall_detection.camera_detect_api import FallDetection
+import recogTotal.religion_forbiden.fence_forbiden as fence_api
+import recogTotal.facenet_retinaface_pytorch.api.recog_emotion_api as emotion_api
+
 
 app_video = Blueprint('video', __name__)
-camera = cv2.VideoCapture(0)  # 0表示默认的摄像头
+# 算法初始化
+fence_func = fence_api.fenceForbiden()
+emotion_func = emotion_api.recog_emotion_activity()
+
+# 开启摄像头的标志
+video_close = False
+
+
+# 关闭摄像头的接口
+@app_video.route("/close_video")
+def close_video():
+    global video_close
+    video_close = True
+    return {"code": 200, "message": "video closed"}
 
 
 # 传输区域入侵检测的视频流
 def generate_frames_forbidden():
-    # 初始化
-    emotion_func = fence_api.fenceForbiden()
+    global video_close
+    camera = cv2.VideoCapture(0)  # 0表示默认的摄像头
     while True:
         # 读取摄像头视频帧
         success, frame = camera.read()
-        if not success:
+        if not success or video_close:
             break
         else:
-            processed_frame = emotion_func.fenceForbidenAPI(ret=success, frame=frame)
+            processed_frame = fence_func.fenceForbidenAPI(ret=success, frame=frame)
 
             # 将处理后的帧转换为图片格式
             ret, buffer = cv2.imencode('.jpg', processed_frame)
@@ -34,15 +48,17 @@ def generate_frames_forbidden():
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     camera.release()  # 释放摄像头资源
+    video_close = False
 
 
 # 表情识别和陌生人检测和义工交互
 def generate_frames():
-    emotion_func = emotion_api.recog_emotion_activity()
+    global video_close
+    camera = cv2.VideoCapture(0)  # 0表示默认的摄像头
     while True:
         # 读取摄像头视频帧
         success, frame = camera.read()
-        if not success:
+        if not success or video_close:
             break
         else:
             processed_frame = emotion_func.recog_emotion_activity_api(frame=frame)
@@ -56,6 +72,7 @@ def generate_frames():
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     camera.release()  # 释放摄像头资源
+    video_close = False
 
 
 # 传输与人脸相关的算法处理后的视频流
@@ -72,6 +89,8 @@ def video_fence_forbidden():
 
 # 跌倒检测处理
 def generate_frames_fall():
+    global video_close
+    camera = cv2.VideoCapture(0)  # 0表示默认的摄像头
     fall_func = FallDetection(model_fall_path=fall_path + 'fall_no-fall_models/deep_learning_models/MLP(9).pt',
                               model_yolo_path=fall_path + 'yolov8/train13_n_no_rotated/weights/best.pt',
                               list_length=2,
@@ -80,7 +99,7 @@ def generate_frames_fall():
     while True:
         # 读取摄像头视频帧
         success, frame = camera.read()
-        if not success:
+        if not success or video_close:
             break
         else:
             processed_frame = fall_func.process_frame(frame=frame)
@@ -94,6 +113,7 @@ def generate_frames_fall():
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
     camera.release()  # 释放摄像头资源
+    video_close = False
 
 
 @app_video.route('/video_fall')

@@ -3,7 +3,7 @@ from flask import request, Blueprint
 from app import db
 from app.mod_event.models import EventInfo
 from app.mod_oldperson.models import OldPersonInfo
-
+# from recogTotal.real_time_fall_detection.camera_detect_api import *
 event = Blueprint('event', __name__)
 
 

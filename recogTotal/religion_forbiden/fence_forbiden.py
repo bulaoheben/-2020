@@ -16,7 +16,7 @@ import threading
 
 from PIL import Image
 
-from app import static_path, db
+from app import db, static_path
 from app.mod_event.models import EventInfo
 from recogTotal.religion_forbiden import forbidden_path
 from recogTotal.religion_forbiden.oldcare.track import CentroidTracker

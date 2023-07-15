@@ -10,7 +10,6 @@ from collections import deque
 from ultralytics import YOLO
 from app import static_path, db
 from PIL import Image
-
 from app.mod_event.models import EventInfo
 
 
